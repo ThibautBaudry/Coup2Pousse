@@ -142,7 +142,7 @@ contract Staking is ChainlinkClient {
         ) + rewardsAvailableFor[_account];
     }
 
-    //function rewardPerUsd(){}
+    //function rewardPerUsd(){} to be continued
 
     function getETHUSDValueChainlink() external view returns (uint256) {
         (, int price,,,) = priceFeedETH.latestRoundData();
