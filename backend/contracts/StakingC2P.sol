@@ -6,142 +6,75 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./C2PToken.sol";
+import "./TokenFarm.sol";
 
 contract Staking is ChainlinkClient {
 
-    struct StakingToken {
+    struct StakesETH {
+        uint256 date;
+        uint256 amount;
+    }
+
+    struct StakesUSDC {
+        uint256 date;
+        uint256 amount;
+    }
+
+    struct StakesOtherToken {
+        uint256 date;
+        uint256 amount;
+    }
+
+    struct StakingTokens {
         bool isStakable;
         string name;
     }
 
-    IERC20 public immutable rewardsToken;
-    address public owner;
-    uint256 public rewardsTimeInSec;
-    uint256 public rewardsFinish;
-    uint256 public updatedAt;
-    uint256 public rewardRate;
-    uint256 public rewardPerTokenStored;
-    uint256 public totalStaked;
-    AggregatorV3Interface internal priceFeedETH; 
-    AggregatorV3Interface internal priceFeedDAI;
+    struct BalancesStakers {
+        uint256 balanceETH;
+        uint256 balanceUSDC;
+        uint256 balanceOtherToken;
+    }
 
-    mapping (address => StakingToken) public tokensStakable;
-    mapping (address => uint256) public userRewardPerTokenPaid;
-    mapping (address => uint256) public rewardsAvailableFor;
-    mapping (address => uint256) public stakedAmountOf;
+    C2PToken private immutable rewardsToken;
+    address public owner;
+
+    uint256 rewardRateETH;
+    uint256 rewardRateUSDC;
+    uint256 rewardRateOtherToken;
+
+    AggregatorV3Interface internal priceFeedETH; 
+    AggregatorV3Interface internal priceFeedUSDC;
+
+    mapping (address => StakingTokens) public tokensStakable;
+    mapping (address => BalancesStakers) public balances;
+    mapping (address => StakesETH[]) public stakesETH;
+    mapping (address => StakesUSDC[]) public stakesUSDC;
+    mapping (address => StakesOtherToken[]) public stakesOther;
 
     event TokenAdded (string name, address tokenAddress);
-    event Stake (uint256 amount, address tokenAddress);
-    event Withdraw (uint256 amount, address tokenAddress);
+    event StakeETH (uint256 amount, address tokenAddress);
+    event StakeUSDC (uint256 amount, address tokenAddress);
+    event StakeOtherToken (uint256 amount, address tokenAddress);
+    event WithdrawETH (uint256 amount, address tokenAddress);
+    event WithdrawUSDC (uint256 amount, address tokenAddress);
+    event WithdrawOtherToken (uint256 amount, address tokenAddress);
 
-    constructor(address _c2pToken) {
+    constructor(address _ETHAddress, address _USDCAddress, address _c2pToken, uint256 _rewardRateETH, uint256 _rewardRateUSDC, uint256 _rewardRateOtherToken) {
         owner = msg.sender;
-        rewardsToken = IERC20(_c2pToken);
+        rewardsToken = C2PToken(_c2pToken);
         priceFeedETH = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
-        priceFeedDAI = AggregatorV3Interface(0x14866185B1962B63C3Ea9E03Bc1da838bab34C19);
+        priceFeedUSDC = AggregatorV3Interface(0xA2F78ab2355fe2f984D808B5CeE7FD0A93D5270E);
+        tokensStakable[_ETHAddress].isStakable = true;
+        tokensStakable[_USDCAddress].isStakable = true;
+        rewardRateETH = _rewardRateETH;
+        rewardRateUSDC = _rewardRateUSDC;
+        rewardRateOtherToken = _rewardRateOtherToken;
     }
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Not the owner");
         _;
-    }
-
-    modifier updateReward(address _account) {
-        rewardPerTokenStored = rewardPerToken();
-        updatedAt = lastTimeRewardApplicable();
-
-        if (_account != address(0)) {
-            rewardsAvailableFor[_account] = earned(_account);
-            userRewardPerTokenPaid[_account] = rewardPerTokenStored;
-        }
-
-        _;
-    }
-
-    function _min(uint256 x, uint256 y) private pure returns (uint256) {
-        return x <= y ? x : y;
-    }
-
-    function lastTimeRewardApplicable() public view returns (uint256) {
-        return _min(rewardsFinish, block.timestamp);
-    }
-
-    function rewardPerToken() public view returns (uint256) {
-        if (totalStaked == 0) {
-            return rewardPerTokenStored;
-        }
-
-        return rewardPerTokenStored
-            + (rewardRate * (lastTimeRewardApplicable() - updatedAt) * 1e18)
-                / totalStaked;
-    }
-
-    function setRewardsDuration(uint256 _duration) external onlyOwner {
-        require(rewardsFinish < block.timestamp, "reward duration not finished");
-        rewardsTimeInSec = _duration;
-    }
-
-    function notifyRewardAmount(uint256 _amount) external onlyOwner updateReward(address(0))
-    {
-        if (block.timestamp >= rewardsFinish) {
-            rewardRate = _amount / rewardsTimeInSec;
-        } else {
-            uint256 remainingRewards = (rewardsFinish - block.timestamp) * rewardRate;
-            rewardRate = (_amount + remainingRewards) / rewardsTimeInSec;
-        }
-
-        require(rewardRate > 0, "reward rate = 0");
-        require(
-            rewardRate * rewardsTimeInSec <= rewardsToken.balanceOf(address(this)),
-            "reward amount > balance"
-        );
-
-        rewardsFinish = block.timestamp + rewardsTimeInSec;
-        updatedAt = block.timestamp;
-    }
-
-    function stake(uint256 _amount, address _tokenAddress) external updateReward(msg.sender) {
-        require(_amount > 0, "amount = 0");
-        require(tokensStakable[_tokenAddress].isStakable = true, "Token not stakable");
-
-        IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _amount);
-        stakedAmountOf[msg.sender] += _amount;
-        totalStaked += _amount;
-
-        emit Stake(_amount, _tokenAddress);
-    }
-
-    function withdraw(uint256 _amount, address _tokenAddress) external updateReward(msg.sender) {
-        require(_amount > 0, "amount = 0");
-        require(tokensStakable[_tokenAddress].isStakable = true, "Token not stakable");
-
-        stakedAmountOf[msg.sender] -= _amount;
-        totalStaked -= _amount;
-        IERC20(_tokenAddress).transfer(msg.sender, _amount);
-
-        emit Withdraw(_amount, _tokenAddress);
-    }
-
-    function earned(address _account) public view returns (uint256) {
-        return (
-            (
-                stakedAmountOf[_account]
-                    * (rewardPerToken() - userRewardPerTokenPaid[_account])
-            ) / 1e18
-        ) + rewardsAvailableFor[_account];
-    }
-
-    //function rewardPerUsd(){} to be continued
-
-    function getETHUSDValueChainlink() external view returns (uint256) {
-        (, int price,,,) = priceFeedETH.latestRoundData();
-        return uint256(price) * 1e10;
-    }
-
-    function getDAIUSDValueChainlink() public view returns (uint256) {
-        (, int price,,,) = priceFeedDAI.latestRoundData();
-        return uint256(price) * 1e10;
     }
 
     function addToken(string calldata _name, address _tokenAddress) public onlyOwner {
@@ -151,20 +84,129 @@ contract Staking is ChainlinkClient {
         tokensStakable[_tokenAddress].name = _name;
         tokensStakable[_tokenAddress].isStakable = true;
 
-        emit TokenAdded(_name, _tokenAddress);
+        emit TokenAdded (_name, _tokenAddress);
     }
 
-    function getAndSupportProjectReward(address _projectAgriculteur) external updateReward(msg.sender) {
-        uint256 reward = rewardsAvailableFor[msg.sender];
-        if (reward > 0) {
-            rewardsAvailableFor[msg.sender] = 0;
-            uint256 rewardForProject = reward/2;
-            uint256 rewardForStaker = reward/2;
-            rewardsToken.transfer(_projectAgriculteur, rewardForProject);
-            rewardsToken.transfer(msg.sender, rewardForStaker);
+    function stakeETH(uint256 _amount, address _addressETH) external {
+        require(_amount > 0, "amount = 0");
+        require(tokensStakable[_addressETH].isStakable = true, "NOT ETH");
+
+        IERC20(_addressETH).transferFrom(msg.sender, address(this), _amount);
+        stakesETH[msg.sender].push(StakesETH(block.timestamp, _amount));
+        balances[msg.sender].balanceETH += _amount;
+
+        emit StakeETH (_amount, _addressETH);
+    }
+
+    function stakeUSDC(uint256 _amount, address _addressUSDC) external {
+        require(_amount > 0, "amount = 0");
+        require(tokensStakable[_addressUSDC].isStakable = true, "NOT USDC");
+
+        IERC20(_addressUSDC).transferFrom(msg.sender, address(this), _amount);
+        stakesUSDC[msg.sender].push(StakesUSDC(block.timestamp, _amount));
+        balances[msg.sender].balanceUSDC += _amount;
+
+        emit StakeUSDC (_amount, _addressUSDC);
+    }
+
+    function stakeAnotherToken(uint256 _amount, address _tokenAddress) external {
+        require(_amount > 0, "amount = 0");
+        require(tokensStakable[_tokenAddress].isStakable = true, "Token not stakable");
+
+        IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _amount);
+        stakesOther[msg.sender].push(StakesOtherToken(block.timestamp, _amount));
+        balances[msg.sender].balanceOtherToken += _amount;
+
+        emit StakeOtherToken (_amount, _tokenAddress);
+    }
+
+    function withdrawETH(uint256 _amount, address _addressETH) external {
+        require(_amount > 0, "amount = 0");
+        require(tokensStakable[_addressETH].isStakable = true, "NOT ETH");
+
+        balances[msg.sender].balanceETH -= _amount;
+        IERC20(_addressETH).transfer(msg.sender, _amount);
+
+        emit WithdrawETH (_amount, _addressETH);
+    }
+
+    function withdrawUSDC(uint256 _amount, address _addressUSDC) external {
+        require(_amount > 0, "amount = 0");
+        require(tokensStakable[_addressUSDC].isStakable = true, "NOT USDC");
+
+        balances[msg.sender].balanceUSDC -= _amount;
+        IERC20(_addressUSDC).transfer(msg.sender, _amount);
+
+        emit WithdrawUSDC (_amount, _addressUSDC);
+    }
+
+    function withdrawOtherToken(uint256 _amount, address _tokenAddress) external {
+        require(_amount > 0, "amount = 0");
+        require(tokensStakable[_tokenAddress].isStakable = true, "Token not stakable");
+
+        balances[msg.sender].balanceOtherToken -= _amount;
+        IERC20(_tokenAddress).transfer(msg.sender, _amount);
+
+        emit WithdrawOtherToken (_amount, _tokenAddress);
+    }
+
+    function getETHValueChainLink() public view returns (uint256) {
+        (, int price,,,) = priceFeedETH.latestRoundData();
+        return uint256(price) * 1e10;
+    }
+
+    function getUSDCValueChainLink() public view returns (uint256) {
+        (, int price,,,) = priceFeedUSDC.latestRoundData();
+        return uint256(price) * 1e10;
+    }
+
+    function getOtherValueChainLink(address _chainlinkAddress) public view returns (uint256) {
+        AggregatorV3Interface priceFeedOtherToken = AggregatorV3Interface(_chainlinkAddress);
+        (, int price,,,) = priceFeedOtherToken.latestRoundData();
+        return uint256(price) * 1e10;
+    }
+
+    function calculateRewardValueETH() public view returns (uint256) {
+        uint256 rewardValueETH;
+        for(uint256 i=0; i < stakesETH[msg.sender].length; i++) {
+            rewardValueETH += rewardRateETH * (stakesETH[msg.sender][i].date - block.timestamp);
+        }
+        return rewardValueETH * getETHValueChainLink();
+    }
+
+    function calculateRewardValueUSDC() public view returns (uint256) {
+        uint256 rewardValueUSDC;
+        for(uint256 i=0; i < stakesUSDC[msg.sender].length; i++) {
+            rewardValueUSDC += rewardRateUSDC * (stakesUSDC[msg.sender][i].date - block.timestamp);
+        }
+        return rewardValueUSDC * getUSDCValueChainLink();
+    }
+
+    function calculateRewardValueOther(address _chainlinkAddress) public view returns (uint256) {
+        uint256 rewardValueOther;
+        for(uint256 i=0; i < stakesOther[msg.sender].length; i++) {
+            rewardValueOther += rewardRateOtherToken * (stakesOther[msg.sender][i].date - block.timestamp);
+        }
+        return rewardValueOther * getOtherValueChainLink(_chainlinkAddress);
+    }
+
+    function calculateRewards(address _chainlinkAddress) public view returns (uint256) {
+        return calculateRewardValueETH() + calculateRewardValueUSDC() + calculateRewardValueOther(_chainlinkAddress);
+    }
+
+    function getBalanceOf() public view onlyOwner returns (BalancesStakers memory) {
+        return balances[msg.sender];
+    }
+
+    function getRewardAndSupportProject(address _projectAgriculteur, address _chainlinkAddress) external {
+        uint256 rewards = calculateRewards(_chainlinkAddress);
+        if (rewards > 0) {
+            uint256 rewardsForProject = rewards/2;
+            uint256 rewardsForStaker = rewards/2;
+            rewardsToken.transfer(_projectAgriculteur, rewardsForProject);
+            rewardsToken.transfer(msg.sender, rewardsForStaker);
         }
     }
 }
-
 
 
