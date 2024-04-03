@@ -82,12 +82,12 @@ contract ProjectsFarm is Ownable {
     /// @param _rna Son numéro RNA 
     /// @param _newAssociationAddress Son addresse
     function addAssociation(string calldata _associationName, uint256 _rna, address _newAssociationAddress) external onlyOwner {
-        require(_newAssociationAddress != address(0), "Address 0");
         require(associations[_newAssociationAddress].isRegistered != true, "Already registered");
 
         associations[_newAssociationAddress].isRegistered = true;
         associations[_newAssociationAddress].name = _associationName;
         associations[_newAssociationAddress].RNA = _rna;
+        associations[_newAssociationAddress].numberOfProjects ++;
 
         emit AssociationRegistered(_associationName, _newAssociationAddress);
     }
@@ -97,10 +97,9 @@ contract ProjectsFarm is Ownable {
     /// @param _associationName Le nom de l'association à supprimer
     /// @param _associationAddressToDelete Son addresse
     function deleteAssociation(string calldata _associationName, address _associationAddressToDelete) external onlyOwner {
-        require(_associationAddressToDelete != address(0), "Address 0");
-        require(associations[_associationAddressToDelete].isRegistered = true, "Not registered");
 
         associations[_associationAddressToDelete].isRegistered = false;
+        associations[_associationAddressToDelete].numberOfProjects --;
 
         emit AssociationDeleted (_associationName, _associationAddressToDelete);
     }
@@ -112,7 +111,6 @@ contract ProjectsFarm is Ownable {
     /// @param _newProjectAddress Son adresse
     /// @param _associationAddress L'adresse de son association de référence
     function addProjectAgriculteur(string calldata _projectDescription, uint256 _siret, address _newProjectAddress, address _associationAddress) external onlyAssociation {
-        require(_newProjectAddress != address(0), "Address 0");
         require(projetsAgricoles[_associationAddress][_newProjectAddress].isRegistered != true, "Already registered");
 
         projetsAgricoles[_associationAddress][_newProjectAddress].isRegistered = true;
@@ -130,8 +128,6 @@ contract ProjectsFarm is Ownable {
     /// @param _projectAddressToDelete Son adresse
     /// @param _associationAddress L'adresse de son association de référence
     function deleteProjectAgriculteur(string calldata _projectDescription, address _projectAddressToDelete, address _associationAddress) external onlyAssociation {
-        require(_projectAddressToDelete != address(0), "Address 0");
-        require(projetsAgricoles[_associationAddress][_projectAddressToDelete].isRegistered = true, "Not registered");
 
         projetsAgricoles[_associationAddress][_projectAddressToDelete].isRegistered = false;
 
