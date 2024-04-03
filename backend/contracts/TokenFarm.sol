@@ -2,65 +2,27 @@
 
 pragma solidity 0.8.24;
 
+/// @title Deux contrats intelligents pour la création de 2 tokens
+/// @author Thibaut Baudry
+/// @notice Ces contrats intelligents créent le C2P qui rémunérera les stakers et le USDC qui pourra être staké (qui simule le véritable USDC)
+/// @dev Les contrats intelligents sont deux ERC-20
+
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract C2PToken is ERC20 {
 
-    address public owner;
-
-    constructor(uint256 initialSupply) ERC20("Coup2Pousse", "C2P"){
-        owner = msg.sender;
-        _mint(msg.sender, initialSupply);
-    }
-
-    function approveC2PToken(address _addressToApprove, uint256 _value) external {
-        require(_addressToApprove != address(0), "Address 0");
-        _approve(owner, _addressToApprove, _value);
-    }
-
-    function getC2PToken(address _addressContributor, uint256 _numberOfTokens) external {
-        require(_addressContributor != address(0), "Address 0");
-        _transfer(owner, _addressContributor, _numberOfTokens);  
-    }
-}
-
-contract ETHToken is ERC20 {
-
-    address public owner;
-
-    constructor(uint256 initialSupply) ERC20("ETH", "ETH"){
-        owner = msg.sender;
-        _mint(msg.sender, initialSupply);
-    }
-
-    function approveETHToken(address _addressToApprove, uint256 _value) external {
-        require(_addressToApprove != address(0), "Address 0");
-        _approve(owner, _addressToApprove, _value);
-    }
-
-    function getETHToken(address _addressContributor, uint256 _numberOfTokens) external {
-        require(_addressContributor != address(0), "Address 0");
-        _transfer(owner, _addressContributor, _numberOfTokens);  
+    /// @notice Crée le C2P et mint la totalité des tokens au déploiement
+    /// @param _initialSupply Le nombre de tokens crée
+    constructor(uint256 _initialSupply) ERC20("Coup2Pousse", "C2P"){
+        _mint(msg.sender, _initialSupply);
     }
 }
 
 contract USDC is ERC20 {
 
-    address public owner;
-
-    constructor(uint256 initialSupply) ERC20("USDC", "USDC"){
-        owner = msg.sender;
-        _mint(msg.sender, initialSupply);
-    }
-
-    function approveUSDCToken(address _addressToApprove, uint256 _value) external {
-        require(_addressToApprove != address(0), "Address 0");
-        _approve(owner, _addressToApprove, _value);
-    }
-
-    function getUSDCToken(address _addressContributor, uint256 _numberOfTokens) external {
-        require(_addressContributor != address(0), "Address 0");
-        _transfer(owner, _addressContributor, _numberOfTokens);  
+    /// @notice Crée l'USDC et mint la totalité des tokens au déploiement
+    /// @param _initialSupply Le nombre de tokens crée
+    constructor(uint256 _initialSupply) ERC20("USDC", "USDC"){
+        _mint(msg.sender, _initialSupply);
     }
 }
