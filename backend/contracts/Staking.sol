@@ -8,13 +8,14 @@ pragma solidity 0.8.24;
 /// @notice On considère que les rewards sont effectués en C2P avec un taux de 1 C2P = 1 USD
 /// @dev Le contrat intelligent est ChainlinkClient, le contrat donnera la valeur de l'USDC et du token de son choix de manière sécurisée
 
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./TokenFarm.sol";
+import "./ProjectsFarm.sol";
 
-contract Staking is ChainlinkClient{
+contract Staking is ChainlinkClient {
 
     struct StakesUSDC {
         uint256 date;
@@ -50,8 +51,8 @@ contract Staking is ChainlinkClient{
     C2PToken public immutable rewardsToken;
     address public owner;
     uint64 numerateur = 1e18;
-    uint256 rewardRateUSDC;
-    uint256 rewardRateOtherToken;
+    uint256 rewardRateUSDC = 100;
+    uint256 rewardRateOtherToken = 150;
 
     AggregatorV3Interface internal priceFeedUSDC;
 
@@ -95,16 +96,12 @@ contract Staking is ChainlinkClient{
     /// @dev Définit taux de reward des autres tokens
     /// @param _USDCAddress L'addresse du token USDC
     /// @param _c2pToken L'addresse du token C2P
-    /// @param _rewardRateUSDC Le taux de reward pour le token USDC
-    /// @param _rewardRateOtherToken Le taux de reward pour les autres tokens
-    constructor(address _USDCAddress, address _c2pToken, uint256 _rewardRateUSDC, uint256 _rewardRateOtherToken) {
+    constructor(address _USDCAddress, address _c2pToken) {
         owner = msg.sender;
         rewardsToken = C2PToken(_c2pToken);
         priceFeedUSDC = AggregatorV3Interface(0xA2F78ab2355fe2f984D808B5CeE7FD0A93D5270E);
         tokensStakable[_USDCAddress].isStakable = true;
         tokensStakable[_USDCAddress].name = "USDC";
-        rewardRateUSDC = _rewardRateUSDC;
-        rewardRateOtherToken = _rewardRateOtherToken;
     }
 
     /// @dev S'assure que l'appelant d'une fonction est le propriétaire du contrat

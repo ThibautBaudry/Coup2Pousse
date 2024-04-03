@@ -11,18 +11,16 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract C2PToken is ERC20 {
 
-    /// @notice Crée le C2P et mint la totalité des tokens au déploiement
-    /// @param _initialSupply Le nombre de tokens crée
-    constructor(uint256 _initialSupply) ERC20("Coup2Pousse", "C2P"){
-        _mint(msg.sender, _initialSupply);
+    /// @notice Crée le C2P et mint 1000 tokens au déploiement
+    constructor() ERC20("Coup2Pousse", "C2P"){
+        _mint(msg.sender, 1000);
     }
 }
 
 contract USDC is ERC20 {
 
-    /// @notice Crée l'USDC et mint la totalité des tokens au déploiement
-    /// @param _initialSupply Le nombre de tokens crée
-    constructor(uint256 _initialSupply) ERC20("USDC", "USDC"){
-        _mint(msg.sender, _initialSupply);
+    /// @notice Crée l'USDC et mint 1000 tokens au déploiement
+    constructor() ERC20("USDC", "USDC"){
+        _mint(msg.sender, 1000);
     }
 }
