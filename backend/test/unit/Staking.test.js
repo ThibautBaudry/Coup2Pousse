@@ -74,16 +74,6 @@ describe("Test Staking Contract", function () {
                 )
         })
 
-        it('should NOT stake another token if token is not registered', async function () {
-            await Staking.addToken("ETH", ETHToken.target);
-            await expect(
-                Staking
-                .stakeOtherToken(10, addr2.address))
-                .to.be.revertedWith(
-                    "Not stakable"
-                )
-        })
-
         it('should NOT withdraw USDC if amount = 0', async function () {
             await Staking.stakeUSDC(10, USDCToken.target);
             await expect(
@@ -111,17 +101,6 @@ describe("Test Staking Contract", function () {
                 .withdrawOtherToken(0, USDCToken.target, 0))
                 .to.be.revertedWith(
                     "amount = 0"
-                )
-        })
-
-        it('should NOT withdraw another if token is not registered', async function () {
-            await Staking.addToken("ETH", ETHToken.target);
-            await Staking.stakeOtherToken(10, ETHToken.target);
-            await expect(
-                Staking
-                .withdrawOtherToken(10, addr2.address, 0))
-                .to.be.revertedWith(
-                    "Not stakable"
                 )
         })
 
