@@ -19,8 +19,16 @@ contract C2PToken is ERC20 {
 
 contract USDC is ERC20 {
 
-    /// @notice Crée l'USDC et mint 1000 tokens au déploiement
+    /// @notice Crée l'USDC fictif et mint 1000 tokens au déploiement
     constructor() ERC20("USDC", "USDC"){
+        _mint(msg.sender, 1000);
+    }
+}
+
+contract ETH is ERC20 {
+
+    /// @notice Crée l'ETH fictif et mint 1000 tokens au déploiement
+    constructor() ERC20("ETH", "ETH"){
         _mint(msg.sender, 1000);
     }
 }

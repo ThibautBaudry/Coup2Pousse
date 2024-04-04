@@ -6,6 +6,8 @@ pragma solidity 0.8.24;
 /// @author Thibaut Baudry
 /// @notice Ce contrat intelligent permet de staker de l'USDC ou un autre token de son choix
 /// @notice On considère que les rewards sont effectués en C2P avec un taux de 1 C2P = 1 USD
+/// @notice Le taux de reward est de 0,001%/seconde pour l'USDC
+/// @notice Le taux de reward est de 0,0015%/seconde pour les autres tokens
 /// @dev Le contrat intelligent est ChainlinkClient, le contrat donnera la valeur de l'USDC et du token de son choix de manière sécurisée
 
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
@@ -22,17 +24,7 @@ contract Staking is ChainlinkClient {
         uint256 amount;
     }
 
-    struct WithdrawsUSDC{
-        uint256 date;
-        uint256 amount;
-    }
-
     struct StakesOtherToken {
-        uint256 date;
-        uint256 amount;
-    }
-
-    struct WithdrawsOtherToken{
         uint256 date;
         uint256 amount;
     }
@@ -43,7 +35,6 @@ contract Staking is ChainlinkClient {
     }
 
     struct BalancesStakers {
-        uint256 balanceETH;
         uint256 balanceUSDC;
         uint256 balanceOtherToken;
     }
@@ -59,9 +50,7 @@ contract Staking is ChainlinkClient {
     mapping (address => StakingTokens) public tokensStakable;
     mapping (address => BalancesStakers) public balances;
     mapping (address => StakesUSDC[]) public stakesUSDC;
-    mapping (address => WithdrawsUSDC[]) public withdrawsUSDC;
     mapping (address => StakesOtherToken[]) public stakesOther;
-    mapping (address => WithdrawsOtherToken[]) public withdrawsOther;
 
     /// @notice Emit lorsqu'un token est ajouté
     /// @param name Le nom du token
@@ -81,12 +70,14 @@ contract Staking is ChainlinkClient {
     /// @notice Emit lorsqu'un withdraw USDC est effectué
     /// @param amount Le montant du withdraw
     /// @param tokenAddress L'adresse du token USDC
-    event WithdrawUSDC (uint256 amount, address tokenAddress);
+    /// @param indiceStake Le stake sur lequel s'effectue le withdraw
+    event WithdrawUSDC (uint256 amount, address tokenAddress, uint256 indiceStake);
 
     /// @notice Emit lorsqu'un withdraw d'un autre token est effectué
     /// @param amount Le montant du stake
     /// @param tokenAddress L'adresse de ce token
-    event WithdrawOtherToken (uint256 amount, address tokenAddress);
+    /// @param indiceStake Le stake sur lequel s'effectue le withdraw
+    event WithdrawOtherToken (uint256 amount, address tokenAddress, uint256 indiceStake);
 
     /// @dev Définit l'adresse qui déploie comme propriétaire du contract
     /// @dev Définit le C2P comme token de reward
@@ -118,8 +109,8 @@ contract Staking is ChainlinkClient {
         require(_tokenAddress != address(0), "Address 0");
         require(tokensStakable[_tokenAddress].isStakable != true, "Already stakable");
 
-        tokensStakable[_tokenAddress].name = _name;
         tokensStakable[_tokenAddress].isStakable = true;
+        tokensStakable[_tokenAddress].name = _name;
 
         emit TokenAdded (_name, _tokenAddress);
     }
@@ -127,9 +118,9 @@ contract Staking is ChainlinkClient {
     /// @notice Stake de l'USDC
     /// @param _amount Le montant d'USDC à staker
     /// @param _addressUSDC L'adresse du token USDC
-    function stakeUSDC(uint256 _amount, address _addressUSDC) external payable {
+    function stakeUSDC(uint256 _amount, address _addressUSDC) external {
         require(_amount > 0, "amount = 0");
-        require(tokensStakable[_addressUSDC].isStakable = true, "NOT USDC");
+        require((keccak256(abi.encode(tokensStakable[_addressUSDC].name))) == (keccak256(abi.encode("USDC"))), "NOT USDC");
         require(stakesUSDC[msg.sender].length < 1000, "");
 
         IERC20(_addressUSDC).transferFrom(msg.sender, address(this), _amount);
@@ -142,7 +133,7 @@ contract Staking is ChainlinkClient {
     /// @notice Stake un token enregistré comme stakable
     /// @param _amount Le montant du token à staker
     /// @param _tokenAddress L'adresse du token 
-    function stakeAnotherToken(uint256 _amount, address _tokenAddress) external payable {
+    function stakeOtherToken(uint256 _amount, address _tokenAddress) external {
         require(_amount > 0, "amount = 0");
         require(tokensStakable[_tokenAddress].isStakable = true, "Not stakable");
         require(stakesOther[msg.sender].length < 1000, "");
@@ -155,41 +146,49 @@ contract Staking is ChainlinkClient {
     }
 
     /// @notice Withdraw de l'USDC
+    /// @notice Pour faire en sorte que le protocole incite les participants à locker leurs jetons
+    /// @notice Le withdraw réinitialise le montant du stake choisi 
     /// @param _amount Le montant d'USDC à withdraw
     /// @param _addressUSDC L'adresse du token USDC
-    function withdrawUSDC(uint256 _amount, address _addressUSDC) external payable {
+    function withdrawUSDC(uint256 _amount, address _addressUSDC, uint256 _stakeToWithdrawIndex) external {
         require(_amount > 0, "amount = 0");
-        require(tokensStakable[_addressUSDC].isStakable = true, "Not stakable");
-        require(withdrawsUSDC[msg.sender].length < 1000, "");
+        require((keccak256(abi.encode(tokensStakable[_addressUSDC].name))) == (keccak256(abi.encode("USDC"))), "NOT USDC");
+        require(stakesUSDC[msg.sender][_stakeToWithdrawIndex].amount >= _amount, "Withdraw too high");
+        require(stakesUSDC[msg.sender].length < 1000, "");
 
         balances[msg.sender].balanceUSDC -= _amount;
         IERC20(_addressUSDC).transfer(msg.sender, _amount);
+        stakesUSDC[msg.sender][_stakeToWithdrawIndex].amount -= _amount;
 
-        emit WithdrawUSDC (_amount, _addressUSDC);
+        emit WithdrawUSDC (_amount, _addressUSDC, _stakeToWithdrawIndex);
     }
 
     /// @notice Withdraw un token enregistré comme stakable
+    /// @notice Pour faire en sorte que le protocole incite les participants à locker leurs jetons
+    /// @notice Le withdraw réinitialise le montant du stake choisi 
     /// @param _amount Le montant du token à withdraw
     /// @param _tokenAddress L'adresse du token 
-    function withdrawOtherToken(uint256 _amount, address _tokenAddress) external payable {
+    function withdrawOtherToken(uint256 _amount, address _tokenAddress, uint256 _stakeToWithdrawIndex) external {
         require(_amount > 0, "amount = 0");
         require(tokensStakable[_tokenAddress].isStakable = true, "Not stakable");
-        require(withdrawsOther[msg.sender].length < 1000, "");
+        require(stakesOther[msg.sender][_stakeToWithdrawIndex].amount >= _amount, "Withdraw too high");
+        require(stakesOther[msg.sender].length < 1000, "");
 
         balances[msg.sender].balanceOtherToken -= _amount;
         IERC20(_tokenAddress).transfer(msg.sender, _amount);
+        stakesOther[msg.sender][_stakeToWithdrawIndex].amount -= _amount;
 
-        emit WithdrawOtherToken (_amount, _tokenAddress);
+        emit WithdrawOtherToken (_amount, _tokenAddress, _stakeToWithdrawIndex);
     }
 
-    /// @notice Récupère la valeur de l'USDC en USD
+    /// @notice Récupère la valeur de l'USDC en USD sur SEPOLIA
     /// @return uint256 La valeur de l'USDC en USD
     function getUSDCValueChainLink() public view returns (uint256) {
         (, int price,,,) = priceFeedUSDC.latestRoundData();
         return (uint256(price) * 1e10 / numerateur);
     }
 
-    /// @notice Récupère la valeur du token en USD
+    /// @notice Récupère la valeur du token en USD sur SEPOLIA
     /// @param _chainlinkAddress L'adresse Chainlink correspondante à la pair token/USD
     /// @return uint256 La valeur du token en USD
     function getOtherValueChainLink(address _chainlinkAddress) public view returns (uint256) {
@@ -203,19 +202,9 @@ contract Staking is ChainlinkClient {
     function stakesValueUSDC() public view returns (uint256) {
         uint256 stakesValueUsdc;
         for(uint256 i=0; i < stakesUSDC[msg.sender].length; i++) {
-            stakesValueUsdc += rewardRateUSDC * (stakesUSDC[msg.sender][i].date - block.timestamp);
+            stakesValueUsdc += ((stakesUSDC[msg.sender][i].date - block.timestamp) / (rewardRateUSDC) * (stakesUSDC[msg.sender][i].amount));
         }
         return (stakesValueUsdc * getUSDCValueChainLink());
-    }
-
-    /// @notice Calcul de la valeur en USD des withdraws USDC du staker
-    /// @return uint256 La valeur en USD des withdraws USDC de l'appelant de la fonction
-    function withdrawsValueUSDC() public view returns (uint256) {
-        uint256 withdrawsValueUsdc;
-        for(uint256 i=0; i < withdrawsUSDC[msg.sender].length; i++) {
-            withdrawsValueUsdc += rewardRateUSDC * (withdrawsUSDC[msg.sender][i].date - block.timestamp);
-        }
-        return (withdrawsValueUsdc * getUSDCValueChainLink());
     }
 
     /// @notice Calcul de la valeur en USD des stakes des autres tokens du staker
@@ -224,39 +213,36 @@ contract Staking is ChainlinkClient {
     function stakesValueOtherToken(address _chainlinkAddress) public view returns (uint256) {
         uint256 stakesValueOther;
         for(uint256 i=0; i < stakesOther[msg.sender].length; i++) {
-            stakesValueOther += rewardRateOtherToken * (stakesOther[msg.sender][i].date - block.timestamp);
+            stakesValueOther += ((stakesOther[msg.sender][i].date - block.timestamp) / (rewardRateOtherToken) * (stakesOther[msg.sender][i].amount));
         }
         return (stakesValueOther * getOtherValueChainLink(_chainlinkAddress));
-    }
-
-    /// @notice Calcul de la valeur en USD des withdraws des autres tokens du staker
-    /// @param _chainlinkAddress L'adresse Chainlink correspondante à la pair token/USD
-    /// @return uint256 La valeur en USD des withdraws des autres tokens de l'appelant de la fonction
-    function withdrawsValueOtherToken(address _chainlinkAddress) public view returns (uint256) {
-        uint256 withdrawsValueOther;
-        for(uint256 i=0; i < withdrawsOther[msg.sender].length; i++) {
-            withdrawsValueOther += rewardRateOtherToken * (withdrawsOther[msg.sender][i].date - block.timestamp);
-        }
-        return (withdrawsValueOther * getOtherValueChainLink(_chainlinkAddress));
     }
 
     /// @notice Calcul de la valeur en USD des rewards du staker
     /// @param _chainlinkAddress L'adresse Chainlink correspondante à la pair token/USD
     /// @return uint256 La valeur en USD des rewards de l'appelant de la fonction
     function calculateRewards(address _chainlinkAddress) public view returns (uint256) {
-        return (stakesValueUSDC() - withdrawsValueUSDC()) + (stakesValueOtherToken(_chainlinkAddress) - withdrawsValueOtherToken(_chainlinkAddress));
+        return (stakesValueUSDC() + stakesValueOtherToken(_chainlinkAddress));
     }
 
     /// @notice Envoie les rewards au staker et au projet Agricole avec un taux de partage de 50%
     /// @param _projectAgriculteur L'adresse du projet agricole que le staker souhaite financer
     /// @param _chainlinkAddress L'address Chainlink correspondante à la pair token/USD
-    function getRewardAndSupportProject(address _projectAgriculteur, address _chainlinkAddress) external payable {
+    function getRewardAndSupportProject(address _projectAgriculteur, address _chainlinkAddress) external {
         uint256 rewards = calculateRewards(_chainlinkAddress);
+        for(uint256 i=0; i < stakesUSDC[msg.sender].length; i++) {
+            stakesUSDC[msg.sender][i].date = 0;
+            stakesUSDC[msg.sender][i].amount = 0;
+        }
+        for(uint256 i=0; i < stakesOther[msg.sender].length; i++) {
+            stakesOther[msg.sender][i].date = 0;
+            stakesOther[msg.sender][i].amount = 0;
+        }     
         if (rewards > 0) {
             uint256 rewardsForProject = rewards/2;
             uint256 rewardsForStaker = rewards/2;
             rewardsToken.transfer(_projectAgriculteur, rewardsForProject);
             rewardsToken.transfer(msg.sender, rewardsForStaker);
-        } 
+        }  
     }
 }
