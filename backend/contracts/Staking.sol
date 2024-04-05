@@ -232,11 +232,9 @@ contract Staking is ChainlinkClient {
         uint256 rewards = calculateRewards(_chainlinkAddress);
         for(uint256 i=0; i < stakesUSDC[msg.sender].length; i++) {
             stakesUSDC[msg.sender][i].date = 0;
-            stakesUSDC[msg.sender][i].amount = 0;
         }
         for(uint256 i=0; i < stakesOther[msg.sender].length; i++) {
             stakesOther[msg.sender][i].date = 0;
-            stakesOther[msg.sender][i].amount = 0;
         }     
         if (rewards > 0) {
             uint256 rewardsForProject = rewards/2;
