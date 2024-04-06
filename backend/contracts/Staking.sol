@@ -6,8 +6,8 @@ pragma solidity 0.8.24;
 /// @author Thibaut Baudry
 /// @notice Ce contrat intelligent permet de staker de l'USDC ou un autre token de son choix
 /// @notice On considère que les rewards sont effectués en C2P avec un taux de 1 C2P = 1 USD
-/// @notice Le taux de reward est de 0,001%/seconde pour l'USDC
-/// @notice Le taux de reward est de 0,0015%/seconde pour les autres tokens
+/// @notice Le taux de reward est de 0,00001%/seconde pour l'USDC
+/// @notice Le taux de reward est de 0,00002%/seconde pour les autres tokens
 /// @dev Le contrat intelligent est ChainlinkClient, le contrat donnera la valeur de l'USDC et du token de son choix de manière sécurisée
 
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
@@ -42,8 +42,8 @@ contract Staking is ChainlinkClient {
     C2PToken public immutable rewardsToken;
     address public owner;
     uint64 numerateur = 1e18;
-    uint256 rewardRateUSDC = 100;
-    uint256 rewardRateOtherToken = 150;
+    uint256 rewardRateUSDC = 1;
+    uint256 rewardRateOtherToken = 2;
 
     AggregatorV3Interface internal priceFeedUSDC;
 
@@ -78,6 +78,8 @@ contract Staking is ChainlinkClient {
     /// @param tokenAddress L'adresse de ce token
     /// @param indiceStake Le stake sur lequel s'effectue le withdraw
     event WithdrawOtherToken (uint256 amount, address tokenAddress, uint256 indiceStake);
+
+    error NoRewards();
 
     /// @dev Définit l'adresse qui déploie comme propriétaire du contract
     /// @dev Définit le C2P comme token de reward
@@ -202,7 +204,7 @@ contract Staking is ChainlinkClient {
     function stakesValueUSDC() public view returns (uint256) {
         uint256 stakesValueUsdc;
         for(uint256 i=0; i < stakesUSDC[msg.sender].length; i++) {
-            stakesValueUsdc += ((stakesUSDC[msg.sender][i].date - block.timestamp) / (rewardRateUSDC) * (stakesUSDC[msg.sender][i].amount));
+            stakesValueUsdc += ((block.timestamp - stakesUSDC[msg.sender][i].date) / rewardRateUSDC * stakesUSDC[msg.sender][i].amount);
         }
         return (stakesValueUsdc * getUSDCValueChainLink());
     }
@@ -213,7 +215,7 @@ contract Staking is ChainlinkClient {
     function stakesValueOtherToken(address _chainlinkAddress) public view returns (uint256) {
         uint256 stakesValueOther;
         for(uint256 i=0; i < stakesOther[msg.sender].length; i++) {
-            stakesValueOther += ((stakesOther[msg.sender][i].date - block.timestamp) / (rewardRateOtherToken) * (stakesOther[msg.sender][i].amount));
+            stakesValueOther += ((block.timestamp - stakesOther[msg.sender][i].date) / rewardRateOtherToken * stakesOther[msg.sender][i].amount);
         }
         return (stakesValueOther * getOtherValueChainLink(_chainlinkAddress));
     }
@@ -229,18 +231,20 @@ contract Staking is ChainlinkClient {
     /// @param _projectAgriculteur L'adresse du projet agricole que le staker souhaite financer
     /// @param _chainlinkAddress L'address Chainlink correspondante à la pair token/USD
     function getRewardAndSupportProject(address _projectAgriculteur, address _chainlinkAddress) external {
-        uint256 rewards = calculateRewards(_chainlinkAddress);
-        for(uint256 i=0; i < stakesUSDC[msg.sender].length; i++) {
-            stakesUSDC[msg.sender][i].date = 0;
-        }
-        for(uint256 i=0; i < stakesOther[msg.sender].length; i++) {
-            stakesOther[msg.sender][i].date = 0;
-        }     
+        uint256 rewards = calculateRewards(_chainlinkAddress);    
         if (rewards > 0) {
+            for(uint256 i=0; i < stakesUSDC[msg.sender].length; i++) {
+            stakesUSDC[msg.sender][i].date = 0;
+            }
+            for(uint256 i=0; i < stakesOther[msg.sender].length; i++) {
+            stakesOther[msg.sender][i].date = 0;
+            }  
             uint256 rewardsForProject = rewards/2;
             uint256 rewardsForStaker = rewards/2;
             rewardsToken.transfer(_projectAgriculteur, rewardsForProject);
             rewardsToken.transfer(msg.sender, rewardsForStaker);
-        }  
+        }  else {
+            revert NoRewards();
+        }
     }
 }

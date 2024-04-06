@@ -13,7 +13,7 @@ contract C2PToken is ERC20 {
 
     /// @notice Crée le C2P et mint 1000 tokens au déploiement
     constructor() ERC20("Coup2Pousse", "C2P"){
-        _mint(msg.sender, 1000);
+        _mint(msg.sender, 1000000 * 10**decimals());
     }
 }
 
@@ -21,7 +21,7 @@ contract USDC is ERC20 {
 
     /// @notice Crée l'USDC fictif et mint 1000 tokens au déploiement
     constructor() ERC20("USDC", "USDC"){
-        _mint(msg.sender, 1000);
+        _mint(msg.sender, 1000000 * 10**decimals());
     }
 }
 
@@ -29,6 +29,6 @@ contract ETH is ERC20 {
 
     /// @notice Crée l'ETH fictif et mint 1000 tokens au déploiement
     constructor() ERC20("ETH", "ETH"){
-        _mint(msg.sender, 1000);
+        _mint(msg.sender, 1000000 * 10**decimals());
     }
 }

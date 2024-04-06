@@ -11,6 +11,9 @@ async function main() {
     const eth = await hre.ethers.deployContract("ETH");
     await eth.waitForDeployment();
     console.log(`ETH deployed to ${eth.target}`);
+    const projectsFarm = await hre.ethers.deployContract("ProjectsFarm");
+    await projectsFarm.waitForDeployment();
+    console.log(`Projects Farm deployed to ${projectsFarm.target}`);
     const staking = await hre.ethers.deployContract("Staking", [usdc.target, c2p.target]);
     await staking.waitForDeployment();
     console.log(`Staking deployed to ${staking.target}`);
