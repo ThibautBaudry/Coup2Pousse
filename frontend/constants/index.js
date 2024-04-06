@@ -1,4 +1,4 @@
-export const contractC2PTokenAddress="0xf953b3A269d80e3eB0F2947630Da976B896A8C5b"
+export const contractC2PTokenAddress="0x5bf5b11053e734690269C6B9D438F8C9d48F528A"
 export const contractC2PTokenAbi=[
   {
     "inputs": [],
@@ -313,10 +313,9 @@ export const contractC2PTokenAbi=[
     "stateMutability": "nonpayable",
     "type": "function"
   }
-
 ]
 
-export const contractUSDCTokenAddress="0xAA292E8611aDF267e563f334Ee42320aC96D0463"
+export const contractUSDCTokenAddress="0xffa7CA1AEEEbBc30C874d32C7e22F052BbEa0429"
 export const contractUSDCTokenAbi=[
   {
     "inputs": [],
@@ -633,7 +632,7 @@ export const contractUSDCTokenAbi=[
   }
 ]
 
-export const contractETHTokenAddress="0x5c74c94173F05dA1720953407cbb920F3DF9f887"
+export const contractETHTokenAddress="0x3aAde2dCD2Df6a8cAc689EE797591b2913658659"
 export const contractETHTokenAbi=[
   {
     "inputs": [],
@@ -950,7 +949,7 @@ export const contractETHTokenAbi=[
   }
 ]
 
-export const contractProjectsFarmAddress="0x720472c8ce72c2A2D711333e064ABD3E6BbEAdd3"
+export const contractProjectsFarmAddress="0xab16A69A5a8c12C732e0DEFF4BE56A70bb64c926"
 export const contractProjectsFarmAbi=[
   {
     "inputs": [],
@@ -1288,7 +1287,7 @@ export const contractProjectsFarmAbi=[
   }
 ]
 
-export const contractStakingAddress="0xe8D2A1E88c91DCd5433208d4152Cc4F399a7e91d"
+export const contractStakingAddress="0xE3011A37A904aB90C8881a99BD1F6E21401f1522"
 export const contractStakingAbi=[
   {
     "inputs": [
@@ -1305,6 +1304,11 @@ export const contractStakingAbi=[
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "NoRewards",
+    "type": "error"
   },
   {
     "anonymous": false,
