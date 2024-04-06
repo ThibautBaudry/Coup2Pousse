@@ -19,6 +19,8 @@ async function main() {
     console.log(`Staking deployed to ${staking.target}`);
     await staking.addToken("ETH", eth.target);
     console.log(`Token ETH added ${eth.target}`);
+    const tokenStakable = await staking.tokensStakable(eth.target);
+    console.log(`Token ETH added ${tokenStakable}`);
 }
 
 main().catch((error) => {
