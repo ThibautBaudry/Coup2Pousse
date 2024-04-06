@@ -24,8 +24,10 @@ describe("Test Staking Contract", function () {
             Staking = await StakingContract.deploy(USDCToken.target, C2PToken.target);
         })
 
-        it('should deploy the smart contract', async function() {
-
+        it('add an ERC20 token', async function() {
+            await Staking.addToken("ETH", ETHToken.target);
+            let ETH = await Staking.tokensStakable(ETHToken.target);
+            expect(ETH.isStakable).to.be.equal(true);
         })
     })
 
@@ -45,6 +47,7 @@ describe("Test Staking Contract", function () {
             await C2PToken.approve(Staking.target, 1000);
             await USDCToken.approve(Staking.target, 1000);
             await ETHToken.approve(Staking.target, 1000);
+            await Staking.addToken("ETH", ETHToken.target);
         })
 
         it('should NOT stake USDC if amount = 0', async function () {
@@ -94,6 +97,16 @@ describe("Test Staking Contract", function () {
                 )
         })
 
+        it('should NOT withdraw USDC if amount too high', async function () {
+            await Staking.stakeUSDC(10, USDCToken.target);
+            await expect(
+                Staking
+                .withdrawUSDC(11, USDCToken.target, 0))
+                .to.be.revertedWith(
+                    "Withdraw too high"
+                )
+        })
+
         it('should NOT withdraw another token if amount = 0', async function () {
             await Staking.stakeOtherToken(10, ETHToken.target);
             await expect(
@@ -104,16 +117,30 @@ describe("Test Staking Contract", function () {
                 )
         })
 
+        it('should NOT withdraw another token if amount too high', async function () {
+            await Staking.stakeOtherToken(10, ETHToken.target);
+            await expect(
+                Staking
+                .withdrawOtherToken(11, ETHToken.target, 0))
+                .to.be.revertedWith(
+                    "Withdraw too high"
+                )
+        })
+
         it('should STAKE USDC', async function () {
             await Staking.stakeUSDC(10, USDCToken.target);
             let balanceOwner = await Staking.balances(owner);
+            let balanceProtocol = await USDCToken.balanceOf(Staking.target);
             expect(balanceOwner.balanceUSDC).to.be.equal(10);
+            expect(balanceProtocol).to.be.equal(10);
         })
 
         it('should STAKE an other token', async function () {
             await Staking.stakeOtherToken(10, ETHToken.target);
             let balanceOwner = await Staking.balances(owner);
+            let balanceProtocol = await ETHToken.balanceOf(Staking.target);
             expect(balanceOwner.balanceOtherToken).to.be.equal(10);
+            expect(balanceProtocol).to.be.equal(10);
         })
 
         it('should WITHDRAW USDC', async function () {
@@ -124,8 +151,8 @@ describe("Test Staking Contract", function () {
         })
 
         it('should WITHDRAW an other token', async function () {
-            await Staking.stakeOtherToken(10, USDCToken.target);
-            await Staking.withdrawOtherToken(1, USDCToken.target, 0);
+            await Staking.stakeOtherToken(10, ETHToken.target);
+            await Staking.withdrawOtherToken(1, ETHToken.target, 0);
             let balanceOwner = await Staking.balances(owner);
             expect(balanceOwner.balanceOtherToken).to.be.equal(9);
         })
@@ -145,7 +172,6 @@ describe("Test Staking Contract", function () {
         })
 
         it('should emit an event when a contributor STAKE an other token', async function () {
-            await Staking.addToken("ETH", ETHToken.target);
             await expect(
                 Staking
                 .stakeOtherToken(10, ETHToken.target))
@@ -178,7 +204,6 @@ describe("Test Staking Contract", function () {
         })
 
         it('should emit an event when a contributor WITHDRAW an other token', async function () {
-            await Staking.addToken("ETH", ETHToken.target);
             await Staking.stakeOtherToken(10, ETHToken.target);
             await expect(
                 Staking
