@@ -3,7 +3,7 @@
 
 DeFi 
 
-Dapp Staking à impact Positif => Soutenir nos agriculteurs
+Dapp Staking à impact Positif: soutenir nos agriculteurs
 
 => BACKEND: Solidity, OpenZeppelin, Chainlink, Hardhat
 
