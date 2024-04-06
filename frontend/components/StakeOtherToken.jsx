@@ -5,7 +5,7 @@ import { Heading, Flex, Button, Input, useToast } from "@chakra-ui/react"
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import { contractStakingAddress, contractStakingAbi } from "@/constants"
 
-const StakeOtherToken = ({ refetch, getEvents }) => {
+const StakeOtherToken = ({ refetch }) => {
 
     const { address } = useAccount();
     const toast = useToast();
@@ -19,7 +19,6 @@ const StakeOtherToken = ({ refetch, getEvents }) => {
                 setaddedAmount('');
                 setaddedAddrOther('');
                 refetch();
-                getEvents();
                 toast({
                     title: "Le stake a bien été effectué",
                     status: "success",

@@ -5,7 +5,7 @@ import { Heading, Flex, Button, Input, useToast } from "@chakra-ui/react"
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import { contractProjectsFarmAddress, contractProjectsFarmAbi } from "@/constants"
 
-const AddAssociation = ({ refetch, getEvents }) => {
+const AddAssociation = ({ refetch }) => {
 
     const { address } = useAccount();
     const toast = useToast();
@@ -21,7 +21,6 @@ const AddAssociation = ({ refetch, getEvents }) => {
                 setaddedRNA('');
                 setaddedAddr('');
                 refetch();
-                getEvents();
                 toast({
                     title: "L'association a bien été ajoutée",
                     status: "success",

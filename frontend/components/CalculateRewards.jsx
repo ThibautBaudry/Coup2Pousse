@@ -5,7 +5,7 @@ import { Heading, Flex, Button, Input, useToast } from "@chakra-ui/react"
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import { contractStakingAddress, contractStakingAbi } from "@/constants"
 
-const CalculateRewards = ({ refetch, getEvents }) => {
+const CalculateRewards = ({ refetch }) => {
 
     const { address } = useAccount();
     const toast = useToast();
@@ -17,7 +17,6 @@ const CalculateRewards = ({ refetch, getEvents }) => {
             onSuccess: () => {
                 setaddedAddrChainlink('');
                 refetch();
-                getEvents();
                 toast({
                     title: "Rewards disponibles",
                     status: "success",

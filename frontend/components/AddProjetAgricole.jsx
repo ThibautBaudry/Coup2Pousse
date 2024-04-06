@@ -5,7 +5,7 @@ import { Heading, Flex, Button, Input, useToast } from "@chakra-ui/react"
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import { contractProjectsFarmAddress, contractProjectsFarmAbi } from "@/constants"
 
-const AddProjetAgricole = ({ refetch, getEvents }) => {
+const AddProjetAgricole = ({ refetch }) => {
 
     const { address } = useAccount();
     const toast = useToast();
@@ -23,7 +23,6 @@ const AddProjetAgricole = ({ refetch, getEvents }) => {
                 setaddedProjectAgriculteurAddr('');
                 setaddedAssociationAddr('');
                 refetch();
-                getEvents();
                 toast({
                     title: "Le projet agricole a bien été ajouté",
                     status: "success",

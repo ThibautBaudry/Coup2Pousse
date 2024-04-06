@@ -2,6 +2,9 @@ import { useState, useEffect } from "react"
 
 import AddAssociation from "./AddAssociation"
 import AddProjetAgricole from "./AddProjetAgricole"
+import DeleteAssociation from "./DeleteAssociation"
+import DeleteProjetAgricole from "./DeleteProjetAgricole"
+import AddToken from "./AddToken"
 import StakeUSDC from "./StakeUSDC"
 import StakeOtherToken from "./StakeOtherToken"
 import WithdrawUSDC from "./WithdrawUSDC"
@@ -36,59 +39,19 @@ const C2P = () => {
       account: address
   })
 
-    const getEvents = async() => {
-        const associationRegisteredEvents = await publicClient.getLogs({
-            address: contractProjectsFarmAddress,
-            event: parseAbiItem('event AssociationRegistered (string associationName, address associationAddress)'),
-            fromBlock: 5512413n,
-            toBlock: 'latest'
-        })
-
-        const projetAgricoleRegisteredEvents = await publicClient.getLogs({
-            address: contractProjectsFarmAddress,
-            event: parseAbiItem('event ProjetAgricoleRegistered (string projectDescription, address agriculteurAddress)'),
-            fromBlock: 5512413n,
-            toBlock: 'latest'
-        })
-
-        const combinedEvents = associationRegisteredEvents.map((event) => ({
-            type: 'AssociationRegistered',
-            name: event.args.associationName,
-            address: event.args.associationAddress,
-            blockNumber: Number(event.blockNumber)
-        })).concat(projetAgricoleRegisteredEvents.map((event) => ({
-            type: 'ProjetAgricoleRegistered',
-            description: event.args.projectDescription,
-            address: event.args.agriculteurAddress,
-            blockNumber: Number(event.blockNumber)
-        })))
-
-        combinedEvents.sort(function (a, b) {
-            return b.blockNumber - a.blockNumber;
-        });
-
-        setEvents(combinedEvents)
-    }
-
-    useEffect(() => {
-        const getAllEvents = async() => {
-            if(address !== 'undefined') {
-                await getEvents();
-            }
-        }
-        getAllEvents()
-    }, [address])
-
     return (
         <>
-        <AddAssociation refetch={refetch} getEvents={getEvents} />
-        <AddProjetAgricole refetch={refetch} getEvents={getEvents} />
-        <StakeUSDC refetch={refetch} getEvents={getEvents} />
-        <StakeOtherToken refetch={refetch} getEvents={getEvents} />
-        <WithdrawUSDC refetch={refetch} getEvents={getEvents} />
-        <WithdrawOtherToken refetch={refetch} getEvents={getEvents} />
-        <CalculateRewards refetch={refetch} getEvents={getEvents} />
-        <GetRewardsAndSupportProject refetch={refetch} getEvents={getEvents} />
+        <AddAssociation refetch={refetch} />
+        <AddProjetAgricole refetch={refetch} />
+        <DeleteAssociation refetch={refetch} />
+        <DeleteProjetAgricole refetch={refetch} />
+        <AddToken refetch={refetch} />
+        <StakeUSDC refetch={refetch} />
+        <StakeOtherToken refetch={refetch} />
+        <WithdrawUSDC refetch={refetch} />
+        <WithdrawOtherToken refetch={refetch} />
+        <CalculateRewards refetch={refetch} />
+        <GetRewardsAndSupportProject refetch={refetch} />
         </>
     )
 }

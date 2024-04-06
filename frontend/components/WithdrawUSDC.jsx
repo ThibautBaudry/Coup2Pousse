@@ -5,7 +5,7 @@ import { Heading, Flex, Button, Input, useToast } from "@chakra-ui/react"
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import { contractStakingAddress, contractStakingAbi } from "@/constants"
 
-const WithdrawUSDC = ({ refetch, getEvents }) => {
+const WithdrawUSDC = ({ refetch }) => {
 
     const { address } = useAccount();
     const toast = useToast();
@@ -21,7 +21,6 @@ const WithdrawUSDC = ({ refetch, getEvents }) => {
                 setaddedAddrUSDC('');
                 setaddedStakingIndex('');
                 refetch();
-                getEvents();
                 toast({
                     title: "Le withdraw a bien été effectué",
                     status: "success",

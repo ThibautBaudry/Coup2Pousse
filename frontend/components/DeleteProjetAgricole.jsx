@@ -3,24 +3,26 @@
 import { useState } from "react"
 import { Heading, Flex, Button, Input, useToast } from "@chakra-ui/react"
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
-import { contractStakingAddress, contractStakingAbi } from "@/constants"
+import { contractProjectsFarmAddress, contractProjectsFarmAbi } from "@/constants"
 
-const GetRewardsAndSupportProject = ({ refetch }) => {
+const DeleteProjetAgricole = ({ refetch }) => {
 
     const { address } = useAccount();
     const toast = useToast();
 
-    const [addedAddrProject, setaddedAddrProject] = useState('');
-    const [addedAddrChainlink, setaddedAddrChainlink] = useState('');
+    const [addedDescription, setaddedDescription] = useState('');
+    const [addedAddr, setaddedAddr] = useState('');
+    const [addedAssociationAddr, setaddedAssociationAddr] = useState('');
 
     const { data: hash, isPending, writeContract } = useWriteContract({
         mutation: {
             onSuccess: () => {
-                setaddedAddrProject('');
-                setaddedAddrChainlink('');
+                setaddedDescription('');
+                setaddedAddr('');
+                setaddedAssociationAddr('');
                 refetch();
                 toast({
-                    title: "Get Rewards And Support",
+                    title: "Le projet agricole a bien été supprimé",
                     status: "success",
                     duration: 3000,
                     isClosable: true,
@@ -37,12 +39,12 @@ const GetRewardsAndSupportProject = ({ refetch }) => {
         },
     })
 
-    const GetRewardsAndSupport = async() => {
+    const DeleteProjetAgricole = async() => {
         writeContract({
-            address: contractStakingAddress,
-            abi: contractStakingAbi,
-            functionName: 'getRewardAndSupportProject',
-            args: [addedAddrChainlink, addedAddrChainlink],
+            address: contractProjectsFarmAddress,
+            abi: contractProjectsFarmAbi,
+            functionName: 'deleteProjectAgriculteur',
+            args: [addedDescription, addedAddr, addedAssociationAddr],
             account: address,
         })
     }
@@ -55,7 +57,7 @@ const GetRewardsAndSupportProject = ({ refetch }) => {
     return (
         <>
             <Heading as='h2' size='xl' mt='1rem'>
-                Get Rewards And Support Project
+                Delete a project
             </Heading>
             <Flex
                 justifyContent="space-between"
@@ -63,12 +65,13 @@ const GetRewardsAndSupportProject = ({ refetch }) => {
                 width="100%"
                 mt="1rem"
             >
-                <Input placeholder='Address PROJET AGRICOLE' value={addedAddrProject} onChange={(e) => setaddedAddrProject(e.target.value)} />
-                <Input placeholder='Address CHAINLINK' value={addedAddrChainlink} onChange={(e) => setaddedAddrChainlink(e.target.value)} />
-                <Button colorScheme='purple' onClick={GetRewardsAndSupport}>{isPending ? 'is ..' : 'GetAndSupport'} </Button>
+                <Input placeholder='Description' value={addedDescription} onChange={(e) => setaddedDescription(e.target.value)} />
+                <Input placeholder='Address' value={addedAddr} onChange={(e) => setaddedAddr(e.target.value)} />
+                <Input placeholder='Address' value={addedAssociationAddr} onChange={(e) => setaddedAssociationAddr(e.target.value)} />
+                <Button colorScheme='purple' onClick={DeleteProjetAgricole}>{isPending ? 'Deleting' : 'Delete'} </Button>
             </Flex>
         </>
   )
 }
 
-export default GetRewardsAndSupportProject
+export default DeleteProjetAgricole
