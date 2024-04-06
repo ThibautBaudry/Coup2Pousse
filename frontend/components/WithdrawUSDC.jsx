@@ -5,23 +5,25 @@ import { Heading, Flex, Button, Input, useToast } from "@chakra-ui/react"
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import { contractStakingAddress, contractStakingAbi } from "@/constants"
 
-const StakeOtherToken = ({ refetch, getEvents }) => {
+const WithdrawUSDC = ({ refetch, getEvents }) => {
 
     const { address } = useAccount();
     const toast = useToast();
 
     const [addedAmount, setaddedAmount] = useState('');
-    const [addedAddrOther, setaddedAddrOther] = useState('');
+    const [addedAddrUSDC, setaddedAddrUSDC] = useState('');
+    const [addedStakingIndex, setaddedStakingIndex] = useState('');
 
     const { data: hash, isPending, writeContract } = useWriteContract({
         mutation: {
             onSuccess: () => {
                 setaddedAmount('');
-                setaddedAddrOther('');
+                setaddedAddrUSDC('');
+                setaddedStakingIndex('');
                 refetch();
                 getEvents();
                 toast({
-                    title: "Le stake a bien été effectué",
+                    title: "Le withdraw a bien été effectué",
                     status: "success",
                     duration: 3000,
                     isClosable: true,
@@ -38,12 +40,12 @@ const StakeOtherToken = ({ refetch, getEvents }) => {
         },
     })
 
-    const StakeOtherToken = async() => {
+    const WithdrawUSDC = async() => {
         writeContract({
             address: contractStakingAddress,
             abi: contractStakingAbi,
-            functionName: 'stakeOtherToken',
-            args: [Number(addedAmount), addedAddrOther],
+            functionName: 'withdrawUSDC',
+            args: [Number(addedAmount), addedAddrUSDC, Number(addedStakingIndex)],
             account: address,
         })
     }
@@ -56,7 +58,7 @@ const StakeOtherToken = ({ refetch, getEvents }) => {
     return (
         <>
             <Heading as='h2' size='xl' mt='1rem'>
-                Stake Token
+                Withdraw USDC
             </Heading>
             <Flex
                 justifyContent="space-between"
@@ -65,11 +67,12 @@ const StakeOtherToken = ({ refetch, getEvents }) => {
                 mt="1rem"
             >
                 <Input placeholder='Amount' value={addedAmount} onChange={(e) => setaddedAmount(e.target.value)} />
-                <Input placeholder='Address Token' value={addedAddrOther} onChange={(e) => setaddedAddrOther(e.target.value)} />
-                <Button colorScheme='purple' onClick={StakeOtherToken}>{isPending ? 'is ..' : 'Stake'} </Button>
+                <Input placeholder='Address USDC' value={addedAddrUSDC} onChange={(e) => setaddedAddrUSDC(e.target.value)} />
+                <Input placeholder='Index Stake' value={addedStakingIndex} onChange={(e) => setaddedStakingIndex(e.target.value)} />
+                <Button colorScheme='purple' onClick={WithdrawUSDC}>{isPending ? 'is ..' : 'Withdraw'} </Button>
             </Flex>
         </>
   )
 }
 
-export default StakeOtherToken
+export default WithdrawUSDC

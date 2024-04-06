@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react"
 
-import AddAssociation from './AddAssociation'
-import Events from './Events'
+import AddAssociation from "./AddAssociation"
+import AddProjetAgricole from "./AddProjetAgricole"
+import StakeUSDC from "./StakeUSDC"
+import StakeOtherToken from "./StakeOtherToken"
+import WithdrawUSDC from "./WithdrawUSDC"
+import WithdrawOtherToken from "./WithdrawOtherToken"
+import CalculateRewards from "./CalculateRewards"
+import GetRewardsAndSupportProject from "./GetRewardsAndSupportProject"
 
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent } from 'wagmi'
 import { contractProjectsFarmAddress, contractProjectsFarmAbi } from '@/constants'
@@ -76,7 +82,13 @@ const C2P = () => {
     return (
         <>
         <AddAssociation refetch={refetch} getEvents={getEvents} />
-        <Events events={events} />
+        <AddProjetAgricole refetch={refetch} getEvents={getEvents} />
+        <StakeUSDC refetch={refetch} getEvents={getEvents} />
+        <StakeOtherToken refetch={refetch} getEvents={getEvents} />
+        <WithdrawUSDC refetch={refetch} getEvents={getEvents} />
+        <WithdrawOtherToken refetch={refetch} getEvents={getEvents} />
+        <CalculateRewards refetch={refetch} getEvents={getEvents} />
+        <GetRewardsAndSupportProject refetch={refetch} getEvents={getEvents} />
         </>
     )
 }

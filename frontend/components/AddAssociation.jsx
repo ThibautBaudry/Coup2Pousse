@@ -45,7 +45,7 @@ const AddAssociation = ({ refetch, getEvents }) => {
             address: contractProjectsFarmAddress,
             abi: contractProjectsFarmAbi,
             functionName: 'addAssociation',
-            args: [addedName, addedRNA, addedAddr],
+            args: [addedName, Number(addedRNA), addedAddr],
             account: address,
         })
     }
@@ -66,8 +66,10 @@ const AddAssociation = ({ refetch, getEvents }) => {
                 width="100%"
                 mt="1rem"
             >
-                <Input placeholder='Address of the new association' value={addedAddr} onChange={(e) => setaddedAddr(e.target.value)} />
-                <Button colorScheme='purple' onClick={AddAssociation}>{isPending ? 'Adding addr' : 'Add a new association'} </Button>
+                <Input placeholder='Name' value={addedName} onChange={(e) => setaddedName(e.target.value)} />
+                <Input placeholder='RNA' value={addedRNA} onChange={(e) => setaddedRNA(e.target.value)} />
+                <Input placeholder='Address' value={addedAddr} onChange={(e) => setaddedAddr(e.target.value)} />
+                <Button colorScheme='purple' onClick={AddAssociation}>{isPending ? 'Adding addr' : 'Add'} </Button>
             </Flex>
         </>
   )
