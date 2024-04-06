@@ -14,7 +14,7 @@ Dapp Staking à impact Positif => Soutenir nos agriculteurs
 
 ## Screenshots
 
-![App Screenshot](https://github.com/ThibautBaudry/Coup2Pousse/blob/main/Capture%20d%E2%80%99e%CC%81cran%202024-04-05%20a%CC%80%2012.59.12.png)
+![App Screenshot](https://github.com/ThibautBaudry/Coup2Pousse/blob/main/App.png)
 
 ## Authors
 
