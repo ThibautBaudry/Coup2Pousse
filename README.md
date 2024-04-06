@@ -12,6 +12,13 @@ Dapp Staking à impact Positif => Soutenir nos agriculteurs
 
 => FRONTEND: NextJS and React.js, RainbowKit and CharkraUI, Viem and Wagmi
 
+# TEAM
+
+Elena ASSEMAN (defi)
+Nicolas BENIT (defi)
+Léo-Paul MARTIN (dev)
+Thibaut BAUDRY (dev)
+
 ![Logo](https://github.com/ThibautBaudry/Coup2Pousse/blob/main/Coup2Pousse.png)
 
 ## Screenshots
