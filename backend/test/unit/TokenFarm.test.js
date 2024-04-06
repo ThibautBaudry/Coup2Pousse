@@ -20,17 +20,17 @@ describe("Test TokenFarm Contract", function () {
 
         it('should mint 1000 C2P to the msg.sender', async function() {
             let balanceC2P = await C2PToken.balanceOf(owner.address);
-            assert.equal(balanceC2P.toString(), "1000")
+            assert.equal(balanceC2P.toString(), "1000000000000000000000000")
         })
 
         it('should mint 1000 USDC to the msg.sender', async function() {
             let balanceUSDC = await USDCToken.balanceOf(owner.address);
-            assert.equal(balanceUSDC.toString(), "1000")
+            assert.equal(balanceUSDC.toString(), "1000000000000000000000000")
         })
 
         it('should mint 1000 USDC to the msg.sender', async function() {
             let balanceETH = await ETHToken.balanceOf(owner.address);
-            assert.equal(balanceETH.toString(), "1000")
+            assert.equal(balanceETH.toString(), "1000000000000000000000000")
         })
     })
 })
