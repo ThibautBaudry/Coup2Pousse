@@ -1,4 +1,4 @@
-export const contractC2PTokenAddress="0x5FbDB2315678afecb367f032d93F642f64180aa3"
+export const contractC2PTokenAddress="0x110FB7cE08A4cc36830216061882881de2601D28"
 export const contractC2PTokenAbi=[
   {
     "inputs": [],
@@ -315,7 +315,7 @@ export const contractC2PTokenAbi=[
   }
 ]
 
-export const contractUSDCTokenAddress="0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+export const contractUSDCTokenAddress="0xD464266812b16fd9b9e0ba81588Bb4E0cFA6E18F"
 export const contractUSDCTokenAbi=[
   {
     "inputs": [],
@@ -632,7 +632,7 @@ export const contractUSDCTokenAbi=[
   }
 ]
 
-export const contractETHTokenAddress="0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+export const contractETHTokenAddress="0x9a0eAfa44C0c66FC9EaDeD423d1f2ce9507c3309"
 export const contractETHTokenAbi=[
   {
     "inputs": [],
@@ -949,7 +949,7 @@ export const contractETHTokenAbi=[
   }
 ]
 
-export const contractProjectsFarmAddress="0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
+export const contractProjectsFarmAddress="0x0dC7dEcA696485FB1d4b8b73C4372F9EE07a14a6"
 export const contractProjectsFarmAbi=[
   {
     "inputs": [],
@@ -1287,7 +1287,7 @@ export const contractProjectsFarmAbi=[
   }
 ]
 
-export const contractStakingAddress="0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
+export const contractStakingAddress="0x809072b656aBfC57c41Fbd3831c1dF525027f785"
 export const contractStakingAbi=[
   {
     "inputs": [

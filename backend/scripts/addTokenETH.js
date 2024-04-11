@@ -21,6 +21,9 @@ async function main() {
     console.log(`Token ETH added ${eth.target}`);
     const tokenStakable = await staking.tokensStakable(eth.target);
     console.log(`Token ETH added ${tokenStakable}`);
+    await c2p.approve(staking.target, 1000);
+    await usdc.approve(staking.target, 1000);
+    await eth.approve(staking.target, 1000);
 }
 
 main().catch((error) => {

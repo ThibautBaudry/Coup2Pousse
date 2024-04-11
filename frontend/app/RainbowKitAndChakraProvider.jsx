@@ -9,7 +9,10 @@ import {
 import { WagmiProvider } from 'wagmi';
 import {
   hardhat
-} from 'wagmi/chains';
+} from 'viem/chains';
+import {
+  sepolia
+} from '@/utils/sepolia'
 import {
   QueryClientProvider,
   QueryClient,
@@ -17,8 +20,8 @@ import {
 
 const config = getDefaultConfig({
     appName: 'My RainbowKit App',
-    projectId: '284e06c3ecc8924f44ab85854d84b650',
-    chains: [hardhat],
+    projectId: 'WALLET_CONNECT_ID',
+    chains: [sepolia],
     ssr: true, // If your dApp uses server side rendering (SSR)
 });
 
